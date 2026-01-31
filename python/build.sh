@@ -4,7 +4,7 @@ set -e
 echo "🐍 Iniciando build da Lambda Python..."
 
 # Limpa builds anteriores
-rm -rf package function.zip
+rm -rf package lambda.zip
 
 # Cria diretório de pacote
 mkdir package
@@ -20,7 +20,7 @@ cp lambda_function.py package/
 # Cria o zip
 echo "🤐 Zipando..."
 cd package
-zip -r ../function.zip .
+zip -r ../lambda.zip .
 cd ..
 
-echo "✅ Build concluído! Arquivo 'function.zip' gerado."
+echo "✅ Build concluído! Arquivo 'lambda.zip' gerado."
