@@ -1,0 +1,32 @@
+# --- Stage 1: Builder ---
+# Utiliza uma imagem com Maven e JDK 21 para orquestrar o build
+FROM maven:3.9.6-eclipse-temurin-21 AS build
+
+WORKDIR /work
+COPY . .
+
+# Comando para construir o executável nativo.
+# O próprio plugin do Quarkus irá baixar e usar uma imagem do GraalVM
+# configurada para cross-compile para ARM64.
+# A flag -DskipTests pula a execução dos testes durante o build do Docker.
+RUN mvn package -Pnative -Dquarkus.native.container-build=true -Dquarkus.native.arch=arm64 -DskipTests
+
+# --- Stage 2: Runner ---
+# Cria a imagem final a partir de uma base mínima
+FROM registry.access.redhat.com/ubi9/ubi-minimal
+
+WORKDIR /work
+
+# Copia o executável nativo da fase de build
+# Quarkus nomeia o executável como 'application' quando usa lambda-http
+COPY --from=build /work/target/function.zip .
+
+# A imagem final contém apenas o ZIP da Lambda.
+# Não há CMD ou ENTRYPOINT, pois o artefato será enviado para a AWS.
+# Opcionalmente, se fosse uma Lambda em container, o CMD seria ["./application", "-Dquarkus.http.host=0.0.0.0"]
+# e o arquivo copiado seria o *-runner
+
+# Para este caso, o Dockerfile serve apenas para o PROCESSO DE BUILD.
+# O artefato final é o function.zip
+LABEL maintainer="devops-gemini"
+LABEL build-artifact="function.zip"
