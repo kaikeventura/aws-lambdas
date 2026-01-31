@@ -18,3 +18,9 @@ variable "enable_build" {
   type        = bool
   default     = true
 }
+
+variable "architecture" {
+  description = "Lambda architecture (x86_64 or arm64)"
+  type        = string
+  default     = "x86_64"
+}

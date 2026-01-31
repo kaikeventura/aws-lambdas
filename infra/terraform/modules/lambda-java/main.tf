@@ -3,7 +3,8 @@ resource "null_resource" "build_lambda" {
 
   provisioner "local-exec" {
     working_dir = "${abspath(path.module)}/../../../../java"
-    command     = "./build-arm64.sh"
+    # Escolhe o script com base na arquitetura
+    command     = var.architecture == "arm64" ? "./build-arm64.sh" : "./build-x86.sh"
   }
 
   triggers = {
@@ -59,7 +60,7 @@ resource "aws_lambda_function" "java_lambda" {
   function_name    = "MyJavaLambda"
   handler          = "not.used"
   runtime          = "provided.al2023"
-  architectures    = ["arm64"]
+  architectures    = [var.architecture]
   memory_size      = 128
   timeout          = 15
 
@@ -67,18 +68,17 @@ resource "aws_lambda_function" "java_lambda" {
 
   filename         = "${abspath(path.module)}/../../../../java/function.zip"
 
-  # Só calcula o hash se o build estiver habilitado OU se o arquivo existir.
-  # Se o build estiver desabilitado e o arquivo não existir, o Terraform falhará na validação do filename, o que é esperado.
   source_code_hash = fileexists("${abspath(path.module)}/../../../../java/function.zip") ? filebase64sha256("${abspath(path.module)}/../../../../java/function.zip") : null
 
   environment {
     variables = {
-      TABLE_NAME              = var.table_name
-      JWT_SECRET              = var.jwt_secret
-      DISABLE_SIGNAL_HANDLERS = "true"
+      TABLE_NAME                  = var.table_name
+      JWT_SECRET                  = var.jwt_secret
+      DISABLE_SIGNAL_HANDLERS     = "true"
+      MP_JWT_VERIFY_ISSUER        = "https://my-app.com"
+      QUARKUS_DYNAMODB_TABLE_NAME = var.table_name
     }
   }
 
-  # Depende do build apenas se ele for criado
   depends_on = [null_resource.build_lambda]
 }

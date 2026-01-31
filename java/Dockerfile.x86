@@ -1,0 +1,42 @@
+# Use an official Maven image based on Ubuntu (Jammy)
+FROM maven:3.9.9-eclipse-temurin-21-jammy AS build
+
+# Install build tools required for native-image
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libz-dev \
+    zlib1g-dev \
+    zip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Download and install GraalVM CE for Linux x64 (Intel/AMD)
+ENV GRAALVM_VERSION=21.0.2
+RUN curl -L https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-${GRAALVM_VERSION}/graalvm-community-jdk-${GRAALVM_VERSION}_linux-x64_bin.tar.gz \
+    | tar xz -C /opt
+
+# Dynamically set JAVA_HOME to the extracted directory
+RUN export JAVA_HOME_DIR=$(find /opt -maxdepth 1 -type d -name "graalvm-community-openjdk-*" | head -n 1) && \
+    ln -s $JAVA_HOME_DIR /opt/graalvm
+
+ENV JAVA_HOME=/opt/graalvm
+ENV PATH="${JAVA_HOME}/bin:${PATH}"
+
+WORKDIR /project
+
+# Copy pom.xml and source
+COPY pom.xml .
+COPY src src
+
+# Build the native executable
+# -Pnative enables the native profile
+# -Dquarkus.native.native-image-xmx=6g gives more memory to the build process
+RUN mvn -Pnative clean package -DskipTests -Dquarkus.native.native-image-xmx=6g
+
+# Prepare the deployment package
+WORKDIR /project/target
+RUN cp *-runner bootstrap
+RUN zip function.zip bootstrap
+
+# Final stage
+FROM scratch
+COPY --from=build /project/target/function.zip /
