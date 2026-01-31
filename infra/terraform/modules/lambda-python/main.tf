@@ -65,11 +65,12 @@ resource "aws_iam_role_policy" "dynamodb_access" {
 
 resource "aws_lambda_function" "python_lambda" {
   function_name    = "MyPythonLambda"
-  handler          = "lambda_function.handler"
+  handler          = "lambda_function.lambda_handler"
   runtime          = "python3.12"
   role             = aws_iam_role.lambda_exec_role.arn
   filename         = data.archive_file.lambda_zip.output_path
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
+  timeout          = 15
 
   environment {
     variables = {
