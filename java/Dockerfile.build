@@ -1,0 +1,27 @@
+FROM ghcr.io/graalvm/native-image-community:21 AS build
+
+# Install Maven and Zip
+RUN microdnf install -y maven zip
+
+WORKDIR /project
+
+# Copy pom.xml and source
+COPY pom.xml .
+COPY src src
+
+# Build the native executable
+# -Pnative enables the native profile
+# -Dquarkus.native.native-image-xmx=4g limits memory usage during build
+RUN mvn -Pnative clean package -DskipTests -Dquarkus.native.native-image-xmx=4g
+
+# Prepare the deployment package
+WORKDIR /project/target
+# Rename the native executable to 'bootstrap' as required by AWS Lambda Custom Runtime
+RUN cp *-runner bootstrap
+# Create the zip file
+RUN zip function.zip bootstrap
+
+# Output stage to allow extracting the zip file easily
+# Usage: docker build -f Dockerfile.build -t lambda-build . && docker create --name extract lambda-build && docker cp extract:/project/target/function.zip . && docker rm extract
+FROM scratch
+COPY --from=build /project/target/function.zip /
