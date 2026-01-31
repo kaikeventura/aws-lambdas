@@ -9,8 +9,10 @@ variable "aws_profile" {
 
 variable "project" {
   type = string
+  default = "aws-lambdas"
 }
 
 variable "env" {
   type = string
+  default = "dev"
 }

@@ -3,7 +3,7 @@ terraform {
     bucket       = "aws-lambdas-dev-tfstate-2025"
     key          = "envs/dev/terraform.tfstate"
     region       = "us-east-1"
-    profile      = "aws-lambdas-dev"
+    profile      = "app-automatic-pipeline-dev"
     encrypt      = true
     use_lockfile = true
   }

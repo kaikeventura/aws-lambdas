@@ -1,6 +1,7 @@
 resource "null_resource" "install_dependencies" {
   provisioner "local-exec" {
-    command = "pip install -r ${path.module}/../../../python/requirements.txt -t ${path.module}/../../../python/package && cp ${path.module}/../../../python/*.py ${path.module}/../../../python/package/"
+    # Usamos abspath(path.module) para garantir um caminho absoluto e subimos 4 níveis para chegar à raiz do projeto
+    command = "pip install -r ${abspath(path.module)}/../../../../python/requirements.txt -t ${abspath(path.module)}/../../../../python/package && cp ${abspath(path.module)}/../../../../python/*.py ${abspath(path.module)}/../../../../python/package/"
   }
 
   triggers = {
@@ -10,8 +11,8 @@ resource "null_resource" "install_dependencies" {
 
 data "archive_file" "lambda_zip" {
   type        = "zip"
-  source_dir  = "${path.module}/../../../python/package"
-  output_path = "${path.module}/../../../python/lambda.zip"
+  source_dir  = "${abspath(path.module)}/../../../../python/package"
+  output_path = "${abspath(path.module)}/../../../../python/lambda.zip"
   depends_on  = [null_resource.install_dependencies]
 }
 
@@ -60,8 +61,8 @@ resource "aws_iam_role_policy" "dynamodb_access" {
 }
 
 resource "aws_lambda_function" "python_lambda" {
-  function_name    = "MyAppLambda"
-  handler          = "main.handler"
+  function_name    = "MyPythonLambda"
+  handler          = "lambda_function.handler"
   runtime          = "python3.12"
   role             = aws_iam_role.lambda_exec_role.arn
   filename         = data.archive_file.lambda_zip.output_path

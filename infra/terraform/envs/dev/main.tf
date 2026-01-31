@@ -1,15 +1,6 @@
-module "network" {
-  source = "../../modules/network"
-
-  project = var.project
-  env     = var.env
-
-  vpc_cidr = var.vpc_cidr
-}
-
 module "dynamodb_users" {
   source     = "../../modules/dynamodb"
-  table_name = "users-dev"
+  table_name = "users"
 
   tags = {
     Environment = var.env
