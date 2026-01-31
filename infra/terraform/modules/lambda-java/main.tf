@@ -61,7 +61,7 @@ resource "aws_lambda_function" "java_lambda" {
   handler          = "not.used"
   runtime          = "provided.al2023"
   architectures    = [var.architecture]
-  memory_size      = 128
+  memory_size      = 256
   timeout          = 15
 
   role             = aws_iam_role.lambda_exec_role.arn
