@@ -18,13 +18,26 @@ output "lambda_java_arn" {
   value       = module.lambda_java.lambda_arn
 }
 
-output "api_gateway_url" {
-  description = "Base URL for the API Gateway"
-  value       = module.api_gateway.base_url
+# --- Python API Outputs ---
+output "python_api_url" {
+  description = "URL for Python API"
+  value       = module.api_gateway_python.base_url
 }
 
-output "api_key" {
-  description = "API Key for accessing the API"
-  value       = module.api_gateway.api_key
+output "python_api_key" {
+  description = "API Key for Python API"
+  value       = module.api_gateway_python.api_key
+  sensitive   = true
+}
+
+# --- Java API Outputs ---
+output "java_api_url" {
+  description = "URL for Java API"
+  value       = module.api_gateway_java.base_url
+}
+
+output "java_api_key" {
+  description = "API Key for Java API"
+  value       = module.api_gateway_java.api_key
   sensitive   = true
 }

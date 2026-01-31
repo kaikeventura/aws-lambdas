@@ -6,22 +6,17 @@ variable "env" {
   type = string
 }
 
-variable "python_lambda_invoke_arn" {
-  description = "Invoke ARN for Python Lambda"
+variable "api_name" {
+  description = "Suffix for the API Name (e.g. 'python' or 'java')"
   type        = string
 }
 
-variable "python_lambda_function_name" {
-  description = "Function Name for Python Lambda"
+variable "lambda_invoke_arn" {
+  description = "Invoke ARN of the target Lambda"
   type        = string
 }
 
-variable "java_lambda_invoke_arn" {
-  description = "Invoke ARN for Java Lambda"
-  type        = string
-}
-
-variable "java_lambda_function_name" {
-  description = "Function Name for Java Lambda"
+variable "lambda_function_name" {
+  description = "Function Name of the target Lambda"
   type        = string
 }

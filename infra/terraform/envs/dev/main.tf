@@ -26,17 +26,28 @@ module "lambda_java" {
   enable_build = var.enable_builds
 }
 
-module "api_gateway" {
+# --- API Gateway Python ---
+module "api_gateway_python" {
   source = "../../modules/api-gateway"
 
   project = var.project
   env     = var.env
+  api_name = "python"
 
-  python_lambda_invoke_arn    = module.lambda_python.lambda_invoke_arn
-  python_lambda_function_name = module.lambda_python.lambda_function_name
+  lambda_invoke_arn    = module.lambda_python.lambda_invoke_arn
+  lambda_function_name = module.lambda_python.lambda_function_name
+}
 
-  java_lambda_invoke_arn    = module.lambda_java.lambda_invoke_arn
-  java_lambda_function_name = module.lambda_java.lambda_name
+# --- API Gateway Java ---
+module "api_gateway_java" {
+  source = "../../modules/api-gateway"
+
+  project = var.project
+  env     = var.env
+  api_name = "java"
+
+  lambda_invoke_arn    = module.lambda_java.lambda_invoke_arn
+  lambda_function_name = module.lambda_java.lambda_name
 }
 
 data "aws_caller_identity" "current" {}
