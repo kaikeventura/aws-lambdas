@@ -14,7 +14,7 @@ variable "jwt_secret" {
 }
 
 variable "enable_build" {
-  description = "Enable or disable the build process."
+  description = "Enable or disable the build process. Set to false to skip building the artifact."
   type        = bool
   default     = true
 }

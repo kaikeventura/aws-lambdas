@@ -1,23 +1,23 @@
 variable "project" {
-  description = "Nome do projeto"
+  description = "Project name"
   type        = string
   default     = "aws-lambdas"
 }
 
 variable "env" {
-  description = "Ambiente (dev, prod, etc)"
+  description = "Environment name"
   type        = string
   default     = "dev"
 }
 
-variable "region" {
-  description = "Região AWS"
+variable "vpc_cidr" {
+  description = "CIDR block for the VPC"
   type        = string
-  default     = "us-east-1"
+  default     = "10.0.0.0/16"
 }
 
-variable "vpc_cidr" {
-  description = "CIDR da VPC"
-  type        = string
-  default     = "10.10.0.0/16"
+variable "enable_builds" {
+  description = "Enable builds for Lambda functions"
+  type        = bool
+  default     = true
 }

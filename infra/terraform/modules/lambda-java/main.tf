@@ -1,8 +1,9 @@
-resource "null_resource" "install_dependencies" {
+resource "null_resource" "build_lambda" {
   count = var.enable_build ? 1 : 0
 
   provisioner "local-exec" {
-    command = "pip install -r ${abspath(path.module)}/../../../../python/requirements.txt -t ${abspath(path.module)}/../../../../python/package && cp ${abspath(path.module)}/../../../../python/*.py ${abspath(path.module)}/../../../../python/package/"
+    working_dir = "${abspath(path.module)}/../../../../java"
+    command     = "./build-arm64.sh"
   }
 
   triggers = {
@@ -10,17 +11,8 @@ resource "null_resource" "install_dependencies" {
   }
 }
 
-data "archive_file" "lambda_zip" {
-  type        = "zip"
-  source_dir  = "${abspath(path.module)}/../../../../python/package"
-  output_path = "${abspath(path.module)}/../../../../python/lambda.zip"
-
-  # Depende do build se ele existir
-  depends_on  = [null_resource.install_dependencies]
-}
-
 resource "aws_iam_role" "lambda_exec_role" {
-  name = "lambda-exec-role"
+  name = "lambda-java-exec-role"
 
   assume_role_policy = jsonencode({
     Version   = "2012-10-17",
@@ -42,7 +34,7 @@ resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
 }
 
 resource "aws_iam_role_policy" "dynamodb_access" {
-  name   = "dynamodb-access-policy"
+  name   = "dynamodb-access-policy-java"
   role   = aws_iam_role.lambda_exec_role.id
   policy = jsonencode({
     Version   = "2012-10-17",
@@ -63,18 +55,30 @@ resource "aws_iam_role_policy" "dynamodb_access" {
   })
 }
 
-resource "aws_lambda_function" "python_lambda" {
-  function_name    = "MyPythonLambda"
-  handler          = "lambda_function.handler"
-  runtime          = "python3.12"
+resource "aws_lambda_function" "java_lambda" {
+  function_name    = "MyJavaLambda"
+  handler          = "not.used"
+  runtime          = "provided.al2023"
+  architectures    = ["arm64"]
+  memory_size      = 128
+  timeout          = 15
+
   role             = aws_iam_role.lambda_exec_role.arn
-  filename         = data.archive_file.lambda_zip.output_path
-  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
+
+  filename         = "${abspath(path.module)}/../../../../java/function.zip"
+
+  # Só calcula o hash se o build estiver habilitado OU se o arquivo existir.
+  # Se o build estiver desabilitado e o arquivo não existir, o Terraform falhará na validação do filename, o que é esperado.
+  source_code_hash = fileexists("${abspath(path.module)}/../../../../java/function.zip") ? filebase64sha256("${abspath(path.module)}/../../../../java/function.zip") : null
 
   environment {
     variables = {
-      TABLE_NAME = var.table_name
-      JWT_SECRET = var.jwt_secret
+      TABLE_NAME              = var.table_name
+      JWT_SECRET              = var.jwt_secret
+      DISABLE_SIGNAL_HANDLERS = "true"
     }
   }
+
+  # Depende do build apenas se ele for criado
+  depends_on = [null_resource.build_lambda]
 }

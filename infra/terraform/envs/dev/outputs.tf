@@ -12,3 +12,8 @@ output "lambda_python_arn" {
   description = "ARN of the Python Lambda function."
   value       = module.lambda_python.lambda_arn
 }
+
+output "lambda_java_arn" {
+  description = "ARN of the Java Lambda function."
+  value       = module.lambda_java.lambda_arn
+}
