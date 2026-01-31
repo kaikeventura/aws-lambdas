@@ -1,6 +1,7 @@
 package com.example;
 
-import io.smallrye.common.annotation.RunOnVirtualThread;
+import io.smallrye.jwt.auth.principal.JWTParser;
+import io.smallrye.jwt.auth.principal.ParseException;
 import io.smallrye.jwt.build.Jwt;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -17,10 +18,12 @@ public class UserService {
     @Inject
     DynamoDbTable<User> userTable;
 
+    @Inject
+    JWTParser jwtParser;
+
     @ConfigProperty(name = "mp.jwt.verify.issuer")
     String jwtIssuer;
 
-    @RunOnVirtualThread
     public Optional<User> createUser(User user) {
         // Check if user already exists
         if (userTable.getItem(r -> r.key(k -> k.partitionValue(user.getEmail()))) != null) {
@@ -38,7 +41,6 @@ public class UserService {
         return Optional.of(user);
     }
 
-    @RunOnVirtualThread
     public Optional<String> authenticateUser(String email, String password) {
         User user = userTable.getItem(r -> r.key(k -> k.partitionValue(email)));
         if (user == null || !BCrypt.checkpw(password, user.getPassword())) {
@@ -54,15 +56,10 @@ public class UserService {
     }
 
     public boolean validateToken(String token) {
-        // This is a simplified validation. In a real app, you'd use quarkus-smallrye-jwt for this.
-        // For this exercise, we will just check if the token can be decoded.
-        // The programmatic validation API is more complex.
         try {
-            // SmallRye's JWT build focuses on creation, not simple programmatic validation.
-            // A true manual validation requires setting up the parser with the key.
-            io.smallrye.jwt.util.JwtUtil.parseClaims(token);
+            jwtParser.parse(token);
             return true;
-        } catch (Exception e) {
+        } catch (ParseException e) {
             return false;
         }
     }
