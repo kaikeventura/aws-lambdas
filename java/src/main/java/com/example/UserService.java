@@ -8,12 +8,15 @@ import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.mindrot.jbcrypt.BCrypt;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
+import org.jboss.logging.Logger;
 
 import java.time.Instant;
 import java.util.Optional;
 
 @ApplicationScoped
 public class UserService {
+
+    private static final Logger LOG = Logger.getLogger(UserService.class);
 
     @Inject
     DynamoDbTable<User> userTable;
@@ -24,8 +27,10 @@ public class UserService {
     @ConfigProperty(name = "mp.jwt.verify.issuer")
     String jwtIssuer;
 
+    @ConfigProperty(name = "JWT_SECRET")
+    String jwtSecret;
+
     public Optional<User> createUser(User user) {
-        // Check if user already exists
         if (userTable.getItem(r -> r.key(k -> k.partitionValue(user.getEmail()))) != null) {
             return Optional.empty();
         }
@@ -51,15 +56,18 @@ public class UserService {
             Jwt.issuer(jwtIssuer)
                 .subject(email)
                 .expiresIn(3600) // 1 hour
-                .sign()
+                .signWithSecret(jwtSecret)
         );
     }
 
     public boolean validateToken(String token) {
         try {
+            // A validação com chave pública precisa ser configurada também
+            // Por enquanto, vamos apenas parsear
             jwtParser.parse(token);
             return true;
         } catch (ParseException e) {
+            LOG.error("Falha na validação do token: " + e.getMessage());
             return false;
         }
     }

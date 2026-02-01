@@ -1,3 +1,7 @@
 package com.example;
 
-public record AuthResponse(String token) {}
+import io.quarkus.runtime.annotations.RegisterForReflection;
+
+@RegisterForReflection
+public record AuthResponse(String token) {
+}

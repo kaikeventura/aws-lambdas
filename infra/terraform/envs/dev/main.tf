@@ -8,12 +8,19 @@ module "dynamodb_users" {
   }
 }
 
+# Novo segredo JWT com mais de 32 caracteres (256 bits)
+variable "jwt_secret_value" {
+  type      = string
+  default   = "a-super-long-and-secure-secret-for-dev-environment-that-is-safe"
+  sensitive = true
+}
+
 module "lambda_python" {
   source = "../../modules/lambda-python"
 
   table_name   = module.dynamodb_users.table_name
   table_arn    = module.dynamodb_users.table_arn
-  jwt_secret   = "your-super-secret-jwt-for-dev"
+  jwt_secret   = var.jwt_secret_value
   enable_build = var.enable_builds
 }
 
@@ -22,7 +29,7 @@ module "lambda_java" {
 
   table_name   = module.dynamodb_users.table_name
   table_arn    = module.dynamodb_users.table_arn
-  jwt_secret   = "your-super-secret-jwt-for-dev"
+  jwt_secret   = var.jwt_secret_value
   enable_build = var.enable_builds
 }
 

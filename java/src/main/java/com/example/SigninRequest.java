@@ -1,4 +1,7 @@
 package com.example;
 
-// Using records for concise, immutable data carriers
-public record SigninRequest(String email, String password) {}
+import io.quarkus.runtime.annotations.RegisterForReflection;
+
+@RegisterForReflection
+public record SigninRequest(String email, String password) {
+}
