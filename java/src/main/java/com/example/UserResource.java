@@ -4,11 +4,16 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.jboss.logging.Logger;
+
+import java.util.Map;
 
 @Path("/api")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class UserResource {
+
+    private static final Logger LOG = Logger.getLogger(UserResource.class);
 
     @Inject
     UserService userService;
@@ -19,7 +24,7 @@ public class UserResource {
         return userService.createUser(user)
                 .map(u -> Response.status(Response.Status.CREATED).entity(u).build())
                 .orElseGet(() -> Response.status(Response.Status.CONFLICT)
-                        .entity("{\"error\":\"User with this email already exists.\"}")
+                        .entity(Map.of("error", "User with this email already exists."))
                         .build());
     }
 
@@ -29,7 +34,7 @@ public class UserResource {
         return userService.authenticateUser(request.email(), request.password())
                 .map(token -> Response.ok(new AuthResponse(token)).build())
                 .orElseGet(() -> Response.status(Response.Status.UNAUTHORIZED)
-                        .entity("{\"error\":\"Invalid credentials.\"}")
+                        .entity(Map.of("error", "Invalid credentials."))
                         .build());
     }
 
@@ -38,16 +43,20 @@ public class UserResource {
     public Response authentication(@HeaderParam("Authorization") String authorizationHeader) {
         if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
             return Response.status(Response.Status.UNAUTHORIZED)
-                    .entity("{\"error\":\"Authorization header is missing or malformed.\"}")
+                    .entity(Map.of("error", "Authorization header is missing or malformed."))
                     .build();
         }
         String token = authorizationHeader.substring(7);
+        try {
+            userService.validateToken(token);
+            return Response.ok(Map.of("message", "Token is valid.")).build();
+        } catch (Exception e) {
+            // Imprime no console para garantir visibilidade nos testes
+            System.err.println("Token validation failed: " + e.getMessage());
+            e.printStackTrace();
 
-        if (userService.validateToken(token)) {
-            return Response.ok("{\"message\":\"Token is valid.\"}").build();
-        } else {
             return Response.status(Response.Status.UNAUTHORIZED)
-                    .entity("{\"error\":\"Token is invalid.\"}")
+                    .entity(Map.of("error", "Token validation failed: " + e.getMessage()))
                     .build();
         }
     }

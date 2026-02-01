@@ -1,7 +1,5 @@
 package com.example;
 
-import io.smallrye.jwt.auth.principal.JWTParser;
-import io.smallrye.jwt.auth.principal.ParseException;
 import io.smallrye.jwt.build.Jwt;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -9,7 +7,13 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.mindrot.jbcrypt.BCrypt;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import org.jboss.logging.Logger;
+import org.jose4j.jwt.consumer.JwtConsumer;
+import org.jose4j.jwt.consumer.JwtConsumerBuilder;
+import org.jose4j.keys.HmacKey;
+import org.jose4j.jws.AlgorithmIdentifiers;
+import org.jose4j.jwa.AlgorithmConstraints;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Optional;
 
@@ -20,9 +24,6 @@ public class UserService {
 
     @Inject
     DynamoDbTable<User> userTable;
-
-    @Inject
-    JWTParser jwtParser;
 
     @ConfigProperty(name = "mp.jwt.verify.issuer")
     String jwtIssuer;
@@ -60,15 +61,25 @@ public class UserService {
         );
     }
 
-    public boolean validateToken(String token) {
-        try {
-            // A validação com chave pública precisa ser configurada também
-            // Por enquanto, vamos apenas parsear
-            jwtParser.parse(token);
-            return true;
-        } catch (ParseException e) {
-            LOG.error("Falha na validação do token: " + e.getMessage());
-            return false;
-        }
+    public void validateToken(String token) throws Exception {
+        // Log para debug
+        LOG.info("Validating token with issuer: " + jwtIssuer);
+        
+        // Simplificando a validação para isolar o problema
+        // Se a validação completa falhar, vamos tentar uma validação mais permissiva temporariamente
+        // para ver se o problema é a chave ou outra claim.
+        
+        JwtConsumer consumer = new JwtConsumerBuilder()
+                .setRequireExpirationTime()
+                .setAllowedClockSkewInSeconds(30)
+                .setVerificationKey(new HmacKey(jwtSecret.getBytes(StandardCharsets.UTF_8)))
+                .setJwsAlgorithmConstraints(
+                        AlgorithmConstraints.ConstraintType.PERMIT, 
+                        AlgorithmIdentifiers.HMAC_SHA256
+                )
+                .setExpectedIssuer(jwtIssuer)
+                .build();
+        
+        consumer.processToClaims(token);
     }
 }
