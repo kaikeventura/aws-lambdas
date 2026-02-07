@@ -30,7 +30,11 @@ COPY src src
 # Build the native executable
 # -Pnative enables the native profile
 # -Dquarkus.native.native-image-xmx=6g gives more memory to the build process
-RUN mvn -Pnative clean package -DskipTests -Dquarkus.native.native-image-xmx=6g
+# Build the native executable
+# Adicionamos -Dquarkus.native.additional-build-args para garantir compatibilidade com a CPU da AWS
+RUN mvn -Pnative clean package -DskipTests \
+    -Dquarkus.native.native-image-xmx=6g \
+    -Dquarkus.native.additional-build-args="-march=x86-64-v2,--initialize-at-build-time=org.slf4j.impl.StaticLoggerBinder"
 
 # Prepare the deployment package
 WORKDIR /project/target
