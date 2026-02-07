@@ -15,7 +15,6 @@ data "archive_file" "lambda_zip" {
   source_dir  = "${abspath(path.module)}/../../../../python/package"
   output_path = "${abspath(path.module)}/../../../../python/lambda.zip"
 
-  # Depende do build se ele existir
   depends_on  = [null_resource.install_dependencies]
 }
 

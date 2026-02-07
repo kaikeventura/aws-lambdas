@@ -3,7 +3,6 @@ resource "null_resource" "build_lambda" {
 
   provisioner "local-exec" {
     working_dir = "${abspath(path.module)}/../../../../java"
-    # Escolhe o script com base na arquitetura
     command     = var.architecture == "arm64" ? "./build-arm64.sh" : "./build-x86.sh"
   }
 

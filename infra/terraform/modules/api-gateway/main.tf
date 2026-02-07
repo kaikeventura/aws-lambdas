@@ -3,9 +3,6 @@ resource "aws_api_gateway_rest_api" "this" {
   description = "API Gateway for ${var.api_name} Lambda"
 }
 
-# ==============================================================================
-# PROXY RESOURCE ({proxy+}) - Captura qualquer sub-rota, incluindo a raiz
-# ==============================================================================
 resource "aws_api_gateway_resource" "proxy" {
   rest_api_id = aws_api_gateway_rest_api.this.id
   parent_id   = aws_api_gateway_rest_api.this.root_resource_id
@@ -29,9 +26,6 @@ resource "aws_api_gateway_integration" "proxy_lambda" {
   uri                     = var.lambda_invoke_arn
 }
 
-# ==============================================================================
-# PERMISSIONS
-# ==============================================================================
 resource "aws_lambda_permission" "apigw" {
   statement_id  = "AllowAPIGatewayInvoke_${var.api_name}"
   action        = "lambda:InvokeFunction"
@@ -40,9 +34,6 @@ resource "aws_lambda_permission" "apigw" {
   source_arn    = "${aws_api_gateway_rest_api.this.execution_arn}/*/*"
 }
 
-# ==============================================================================
-# DEPLOYMENT & STAGE
-# ==============================================================================
 resource "aws_api_gateway_deployment" "this" {
   rest_api_id = aws_api_gateway_rest_api.this.id
 
@@ -65,9 +56,6 @@ resource "aws_api_gateway_stage" "dev" {
   stage_name    = var.env
 }
 
-# ==============================================================================
-# API KEY & USAGE PLAN
-# ==============================================================================
 resource "aws_api_gateway_api_key" "mykey" {
   name = "${var.project}-${var.env}-${var.api_name}-key"
 }

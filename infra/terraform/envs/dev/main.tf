@@ -8,7 +8,6 @@ module "dynamodb_users" {
   }
 }
 
-# Novo segredo JWT com mais de 32 caracteres (256 bits)
 variable "jwt_secret_value" {
   type      = string
   default   = "a-super-long-and-secure-secret-for-dev-environment-that-is-safe"
@@ -33,7 +32,6 @@ module "lambda_java" {
   enable_build = var.enable_builds
 }
 
-# --- API Gateway Python ---
 module "api_gateway_python" {
   source = "../../modules/api-gateway"
 
@@ -45,7 +43,6 @@ module "api_gateway_python" {
   lambda_function_name = module.lambda_python.lambda_function_name
 }
 
-# --- API Gateway Java ---
 module "api_gateway_java" {
   source = "../../modules/api-gateway"
 

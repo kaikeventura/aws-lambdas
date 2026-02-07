@@ -85,23 +85,18 @@ func main() {
 func runFullBenchmark(api APITestConfig) {
 	fmt.Printf("\n--- Testando fluxo completo para: %s ---\n", api.Name)
 
-	// Cenário 1: Pico de requisições
 	fmt.Println("Cenário 1: Pico de requisições (50 flows/s por 20s)")
 	runFlowLoadTest(api, 20*time.Second, 50)
 
-	// Pausa
 	fmt.Println("Pausando por 10 segundos...")
 	time.Sleep(10 * time.Second)
 
-	// Cenário 2: Nova carga de requisições
 	fmt.Println("Cenário 2: Carga de requisições (25 flows/s por 17s)")
 	runFlowLoadTest(api, 17*time.Second, 25)
 
-	// Pausa de 5 minutos
 	fmt.Println("Pausando por 5 minutos...")
 	time.Sleep(5 * time.Minute)
 
-	// Cenário 3: Outra carga de requisições
 	fmt.Println("Cenário 3: Carga de requisições (40 flows/s por 6s)")
 	runFlowLoadTest(api, 6*time.Second, 40)
 
@@ -111,9 +106,9 @@ func runFullBenchmark(api APITestConfig) {
 func runFlowLoadTest(api APITestConfig, duration time.Duration, flowsPerSecond int) {
 	var wg sync.WaitGroup
 	requests := make(chan struct{})
-	client := &http.Client{Timeout: 20 * time.Second} // Timeout para o fluxo completo
+	client := &http.Client{Timeout: 20 * time.Second}
 
-	for i := 0; i < 50; i++ { // 50 workers concorrentes
+	for i := 0; i < 50; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
@@ -141,7 +136,6 @@ func runFlowLoadTest(api APITestConfig, duration time.Duration, flowsPerSecond i
 }
 
 func executeFullFlow(client *http.Client, api APITestConfig) {
-	// 1. Signup
 	email := fmt.Sprintf("user_%s@test.com", randomString(12))
 	signupBody := fmt.Sprintf(api.SignupEndpoint.Body, email)
 
@@ -150,7 +144,6 @@ func executeFullFlow(client *http.Client, api APITestConfig) {
 		return
 	}
 
-	// 2. Signin
 	signinBody := fmt.Sprintf(api.SigninEndpoint.Body, email)
 	respBody, err := doPostAndReadBody(client, api.SigninEndpoint.URL, api.SigninEndpoint.APIKey, "", signinBody)
 	if err != nil {
@@ -166,7 +159,6 @@ func executeFullFlow(client *http.Client, api APITestConfig) {
 		return
 	}
 
-	// 3. Authentication
 	err = doPost(client, api.AuthEndpoint.URL, api.AuthEndpoint.APIKey, "Bearer "+token, "")
 	if err != nil {
 		return
