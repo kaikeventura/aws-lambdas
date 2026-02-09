@@ -2,7 +2,7 @@ resource "null_resource" "build_rust" {
   count = var.enable_build ? 1 : 0
 
   provisioner "local-exec" {
-    command = "cd ${abspath(path.module)}/../../../../rust && cargo build --release && cp target/release/aws-lambdas-rust bootstrap"
+    command = "docker run --rm -v ${abspath(path.module)}/../../../../rust:/volume -w /volume clux/muslrust cargo build --release && cp ${abspath(path.module)}/../../../../rust/target/x86_64-unknown-linux-musl/release/aws-lambdas-rust ${abspath(path.module)}/../../../../rust/bootstrap"
   }
 
   triggers = {

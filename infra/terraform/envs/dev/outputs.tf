@@ -37,7 +37,7 @@ output "python_api_url" {
 output "python_api_key" {
   description = "API Key for Python API"
   value       = module.api_gateway_python.api_key
-  sensitive   = false
+  sensitive   = true
 }
 
 # --- Java API Outputs ---
@@ -49,7 +49,7 @@ output "java_api_url" {
 output "java_api_key" {
   description = "API Key for Java API"
   value       = module.api_gateway_java.api_key
-  sensitive   = false
+  sensitive   = true
 }
 
 # --- Go API Outputs ---
@@ -61,7 +61,7 @@ output "go_api_url" {
 output "go_api_key" {
   description = "API Key for Go API"
   value       = module.api_gateway_go.api_key
-  sensitive   = false
+  sensitive   = true
 }
 
 # --- Rust API Outputs ---
@@ -73,5 +73,5 @@ output "rust_api_url" {
 output "rust_api_key" {
   description = "API Key for Rust API"
   value       = module.api_gateway_rust.api_key
-  sensitive   = false
+  sensitive   = true
 }
