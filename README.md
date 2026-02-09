@@ -1,6 +1,6 @@
 # AWS Lambdas Benchmark Project
 
-Este repositório contém um projeto completo para comparar o desempenho de AWS Lambdas implementadas em **Java (Quarkus)** e **Python**. O projeto inclui a infraestrutura como código (Terraform), o código fonte das funções e uma ferramenta de benchmark em Go.
+Este repositório contém um projeto completo para comparar o desempenho de AWS Lambdas implementadas em **Java (Quarkus)**, **Python**, **Go** e **Rust**. O projeto inclui a infraestrutura como código (Terraform), o código fonte das funções e uma ferramenta de benchmark.
 
 ## Estrutura do Projeto
 
@@ -9,9 +9,11 @@ A estrutura de diretórios é organizada da seguinte forma:
 ```
 /
 ├── benchmark/      # Ferramenta de teste de carga escrita em Go
+├── go/             # Implementação da Lambda em Go
 ├── infra/          # Infraestrutura como código (Terraform)
 ├── java/           # Implementação da Lambda em Java (Quarkus)
 ├── python/         # Implementação da Lambda em Python
+├── rust/           # Implementação da Lambda em Rust
 └── README.md       # Documentação do projeto
 ```
 
@@ -25,18 +27,6 @@ A implementação Java utiliza o framework **Quarkus** para otimizar o tempo de 
 *   **Framework:** Quarkus 3.15.1
 *   **Java Version:** 21
 *   **Build Tool:** Maven
-*   **Principais Dependências:**
-    *   `quarkus-amazon-lambda-rest`: Integração com AWS Lambda e API Gateway.
-    *   `quarkus-resteasy-jackson`: Serialização JSON.
-    *   `quarkus-amazon-dynamodb-enhanced`: Cliente DynamoDB otimizado.
-    *   `quarkus-smallrye-jwt`: Autenticação JWT.
-    *   `jbcrypt`: Hashing de senhas.
-    *   `lombok`: Redução de boilerplate code.
-
-### Build e Deploy
-O projeto suporta build nativo e JVM. Scripts auxiliares estão disponíveis:
-*   `build-x86.sh`: Compila para arquitetura x86.
-*   `build-arm64.sh`: Compila para arquitetura ARM64 (Graviton).
 
 ---
 
@@ -45,19 +35,46 @@ O projeto suporta build nativo e JVM. Scripts auxiliares estão disponíveis:
 A implementação Python é uma função Lambda padrão, utilizando bibliotecas leves para manter o cold start baixo.
 
 *   **Localização:** `/python`
-*   **Runtime:** Python 3.x
+*   **Runtime:** Python 3.12
 *   **Principais Dependências (`requirements.txt`):**
     *   `boto3`: SDK da AWS para interagir com DynamoDB.
     *   `PyJWT`: Manipulação de tokens JWT.
     *   `bcrypt`: Hashing de senhas.
 
-### Estrutura
-*   `lambda_function.py`: Ponto de entrada da função.
-*   `build.sh`: Script para empacotar a função e dependências em um arquivo ZIP.
+---
+
+## 3. Go
+
+A implementação em Go é compilada para um binário nativo e executada no runtime `provided.al2`.
+
+*   **Localização:** `/go`
+*   **Runtime:** `provided.al2`
+*   **Build:** O binário é compilado estaticamente com `CGO_ENABLED=0` para evitar problemas de compatibilidade com a `glibc`.
+*   **Principais Dependências:**
+    *   `github.com/aws/aws-lambda-go`: Runtime da AWS Lambda.
+    *   `github.com/aws/aws-sdk-go`: SDK da AWS.
+    *   `github.com/golang-jwt/jwt/v5`: Manipulação de JWT.
+    *   `golang.org/x/crypto/bcrypt`: Hashing de senhas.
 
 ---
 
-## 3. Infraestrutura (Terraform)
+## 4. Rust
+
+A implementação em Rust também é compilada para um binário nativo estático, visando máxima performance e segurança.
+
+*   **Localização:** `/rust`
+*   **Runtime:** `provided.al2`
+*   **Build:** O binário é compilado para o target `x86_64-unknown-linux-musl` para garantir compatibilidade com o ambiente Lambda. O build é feito via Docker para não depender de ferramentas no host.
+*   **Principais Dependências:**
+    *   `lambda_runtime`: Runtime da AWS Lambda.
+    *   `aws-sdk-dynamodb`: SDK da AWS.
+    *   `jsonwebtoken`: Manipulação de JWT.
+    *   `bcrypt`: Hashing de senhas.
+    *   `tokio`: Runtime assíncrono.
+
+---
+
+## 5. Infraestrutura (Terraform)
 
 A infraestrutura é provisionada utilizando **Terraform**, garantindo reprodutibilidade e gerenciamento de estado.
 
@@ -66,9 +83,11 @@ A infraestrutura é provisionada utilizando **Terraform**, garantindo reprodutib
 *   **Região:** `us-east-1`
 
 ### Módulos
-*   `modules/dynamodb`: Criação das tabelas DynamoDB (ex: tabela `users`).
+*   `modules/dynamodb`: Criação das tabelas DynamoDB.
 *   `modules/lambda-java`: Provisionamento da Lambda Java.
 *   `modules/lambda-python`: Provisionamento da Lambda Python.
+*   `modules/lambda-go`: Provisionamento da Lambda Go.
+*   `modules/lambda-rust`: Provisionamento da Lambda Rust.
 *   `modules/api-gateway`: Configuração do API Gateway para expor as Lambdas.
 
 ### Ambientes
@@ -76,31 +95,18 @@ A infraestrutura é provisionada utilizando **Terraform**, garantindo reprodutib
 
 ---
 
-## 4. Benchmark (Go)
+## 6. Benchmark (Go)
 
-Uma ferramenta personalizada escrita em **Go** para executar testes de carga e comparar o desempenho das duas implementações.
+Uma ferramenta personalizada escrita em **Go** para executar testes de carga e comparar o desempenho das implementações.
 
 *   **Localização:** `/benchmark`
 *   **Linguagem:** Go
 *   **Arquivo Principal:** `main.go`
 
-### Funcionalidades
-O benchmark executa um fluxo completo de autenticação (Signup -> Signin -> Auth) simulando usuários reais.
-
-### Cenários de Teste Atuais
-O teste é dividido em três fases para simular diferentes cargas:
-1.  **Cenário 1:** 50 flows/s por 20 segundos.
-2.  **Pausa:** 10 segundos.
-3.  **Cenário 2:** 25 flows/s por 17 segundos.
-4.  **Pausa:** 5 minutos.
-5.  **Cenário 3:** 40 flows/s por 6 segundos.
-
-**Workers:** 50 goroutines concorrentes são utilizadas para gerar a carga.
-
 ### Como Executar
 1.  Certifique-se de ter Go instalado.
 2.  Navegue até a pasta `benchmark`.
-3.  Configure as variáveis de ambiente ou edite as constantes `javaBaseURL`, `javaAPIKey`, `pythonBaseURL`, `pythonAPIKey` no arquivo `main.go` com os valores do seu ambiente implantado.
+3.  Configure as variáveis de ambiente ou edite as constantes de URL e API Key no arquivo `main.go` com os valores do seu ambiente implantado (obtidos dos outputs do Terraform).
 4.  Execute:
     ```bash
     go run main.go
@@ -108,9 +114,9 @@ O teste é dividido em três fases para simular diferentes cargas:
 
 ---
 
-## 5. Resultados do Benchmark (CloudWatch)
+## 7. Resultados do Benchmark (CloudWatch)
 
-Abaixo estão os resultados coletados via CloudWatch Dashboard para uma execução de teste.
+**Nota:** Os resultados a seguir comparam apenas as implementações em **Java** e **Python**. Testes para Go e Rust serão adicionados futuramente.
 
 ### Lambda Metrics
 
@@ -197,7 +203,7 @@ Latência total e de integração para a stack Java.
 
 ![API Gateway Java Latency.png](prints/API%20Gateway%20Java%20Latency.png)
 
-#### 4. Python: Latency & Integration Latency
+#### 2. Python: Latency & Integration Latency
 Latência total e de integração para a stack Python.
 
 | Metric | Min (ms) | Max (ms) | Avg (ms) | P99 (ms) |
@@ -209,7 +215,7 @@ Latência total e de integração para a stack Python.
 
 ---
 
-## 6. Conclusão e Comparativo Final
+## 8. Conclusão e Comparativo Final (Java vs Python)
 
 Com base nos dados coletados, podemos fazer uma análise detalhada entre as duas implementações:
 
@@ -221,20 +227,17 @@ Com base nos dados coletados, podemos fazer uma análise detalhada entre as duas
 
 ### Consumo de Recursos
 *   **Memória:** O Java consumiu mais memória (Max ~130MB) comparado ao Python (~88MB). Isso é esperado dada a JVM, mas o valor é baixo para Java, validando o uso do Quarkus.
-*   **Concorrência:** O Java atingiu picos de concorrência muito maiores, o que é natural dado o maior volume de requisições processadas.
 
 ### Custo
 *   **Custo Total:** O custo estimado para o Java foi **menor** ($0.0061 vs $0.0081), mesmo processando **mais que o dobro** de requisições.
-*   **Eficiência de Custo:** Como o custo da Lambda é baseado em (Duração * Memória), a rapidez do Java compensou o uso ligeiramente maior de memória. O Python, sendo mais lento, acabou custando mais por transação.
+*   **Eficiência de Custo:** Como o custo da Lambda é baseado em (Duração * Memória), a rapidez do Java compensou o uso ligeiramente maior de memória.
 
 ### Veredito: Qual a melhor escolha?
 
-**Vencedor: Java (Quarkus)**
+**Vencedor (Java vs Python): Java (Quarkus)**
 
 Para este cenário de API REST com DynamoDB, a implementação em **Java com Quarkus** é a escolha superior.
 
 *   ✅ **Mais Rápido:** Respostas 3x mais rápidas para o usuário final.
 *   ✅ **Mais Barato:** Menor custo por transação devido à menor duração de execução.
 *   ✅ **Escalabilidade:** Demonstrou capacidade de lidar com maior volume de carga (throughput).
-
-A implementação em Python, embora mais simples e com menor consumo de memória, sofreu com tempos de execução mais longos, o que impactou diretamente a latência e o custo final.
