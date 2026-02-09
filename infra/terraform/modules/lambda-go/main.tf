@@ -2,7 +2,7 @@ resource "null_resource" "build_go" {
   count = var.enable_build ? 1 : 0
 
   provisioner "local-exec" {
-    command = "cd ${abspath(path.module)}/../../../../go && GOOS=linux GOARCH=amd64 go build -o bootstrap main.go"
+    command = "cd ${abspath(path.module)}/../../../../go && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o bootstrap main.go"
   }
 
   triggers = {
