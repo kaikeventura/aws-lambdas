@@ -7,8 +7,8 @@ import (
 	"io"
 	"math/rand"
 	"net/http"
-	"time"
 	"sync"
+	"time"
 )
 
 type EndpointConfig struct {
@@ -34,52 +34,92 @@ var (
 
 	pythonBaseURL = "PYTHON_API_GATEWAY_URL"
 	pythonAPIKey  = "PYTHON_API_KEY"
+
+	goBaseURL = "GO_API_GATEWAY_URL"
+	goAPIKey  = "GO_API_KEY"
+
+	rustBaseURL = "RUST_API_GATEWAY_URL"
+	rustAPIKey  = "RUST_API_KEY"
 )
-
-var javaAPI = APITestConfig{
-	Name: "Java",
-	SignupEndpoint: EndpointConfig{
-		URL:    javaBaseURL + "/api/signup",
-		APIKey: javaAPIKey,
-		Body:   `{"email": "%s", "password": "senha", "name": "Java User"}`,
-	},
-	SigninEndpoint: EndpointConfig{
-		URL:    javaBaseURL + "/api/signin",
-		APIKey: javaAPIKey,
-		Body:   `{"email": "%s", "password": "senha"}`,
-	},
-	AuthEndpoint: EndpointConfig{
-		URL:    javaBaseURL + "/api/authentication",
-		APIKey: javaAPIKey,
-	},
-}
-
-var pythonAPI = APITestConfig{
-	Name: "Python",
-	SignupEndpoint: EndpointConfig{
-		URL:    pythonBaseURL + "/signup",
-		APIKey: pythonAPIKey,
-		Body:   `{"email": "%s", "password": "MinhaSenhaForte123!", "name": "Kaike Teste"}`,
-	},
-	SigninEndpoint: EndpointConfig{
-		URL:    pythonBaseURL + "/signin",
-		APIKey: pythonAPIKey,
-		Body:   `{"email": "%s", "password": "MinhaSenhaForte123!"}`,
-	},
-	AuthEndpoint: EndpointConfig{
-		URL:    pythonBaseURL + "/authentication",
-		APIKey: pythonAPIKey,
-	},
-}
 
 func main() {
 	rand.Seed(time.Now().UnixNano())
 
-	fmt.Println("=== Iniciando Benchmark para API Java ===")
-	runFullBenchmark(javaAPI)
+	apisToTest := []APITestConfig{
+		{
+			Name: "Java",
+			SignupEndpoint: EndpointConfig{
+				URL:    javaBaseURL + "/api/signup",
+				APIKey: javaAPIKey,
+				Body:   `{"email": "%s", "password": "senha", "name": "Java User"}`,
+			},
+			SigninEndpoint: EndpointConfig{
+				URL:    javaBaseURL + "/api/signin",
+				APIKey: javaAPIKey,
+				Body:   `{"email": "%s", "password": "senha"}`,
+			},
+			AuthEndpoint: EndpointConfig{
+				URL:    javaBaseURL + "/api/authentication",
+				APIKey: javaAPIKey,
+			},
+		},
+		{
+			Name: "Python",
+			SignupEndpoint: EndpointConfig{
+				URL:    pythonBaseURL + "/signup",
+				APIKey: pythonAPIKey,
+				Body:   `{"email": "%s", "password": "MinhaSenhaForte123!", "name": "Python User"}`,
+			},
+			SigninEndpoint: EndpointConfig{
+				URL:    pythonBaseURL + "/signin",
+				APIKey: pythonAPIKey,
+				Body:   `{"email": "%s", "password": "MinhaSenhaForte123!"}`,
+			},
+			AuthEndpoint: EndpointConfig{
+				URL:    pythonBaseURL + "/authentication",
+				APIKey: pythonAPIKey,
+			},
+		},
+		{
+			Name: "Go",
+			SignupEndpoint: EndpointConfig{
+				URL:    goBaseURL + "/signup",
+				APIKey: goAPIKey,
+				Body:   `{"email": "%s", "password": "password123", "name": "Go User"}`,
+			},
+			SigninEndpoint: EndpointConfig{
+				URL:    goBaseURL + "/signin",
+				APIKey: goAPIKey,
+				Body:   `{"email": "%s", "password": "password123"}`,
+			},
+			AuthEndpoint: EndpointConfig{
+				URL:    goBaseURL + "/authentication",
+				APIKey: goAPIKey,
+			},
+		},
+		{
+			Name: "Rust",
+			SignupEndpoint: EndpointConfig{
+				URL:    rustBaseURL + "/signup",
+				APIKey: rustAPIKey,
+				Body:   `{"email": "%s", "password": "password123", "name": "Rust User"}`,
+			},
+			SigninEndpoint: EndpointConfig{
+				URL:    rustBaseURL + "/signin",
+				APIKey: rustAPIKey,
+				Body:   `{"email": "%s", "password": "password123"}`,
+			},
+			AuthEndpoint: EndpointConfig{
+				URL:    rustBaseURL + "/authentication",
+				APIKey: rustAPIKey,
+			},
+		},
+	}
 
-	fmt.Println("\n=== Iniciando Benchmark para API Python ===")
-	runFullBenchmark(pythonAPI)
+	for _, api := range apisToTest {
+		fmt.Printf("\n=== Iniciando Benchmark para API %s ===\n", api.Name)
+		runFullBenchmark(api)
+	}
 }
 
 func runFullBenchmark(api APITestConfig) {
@@ -108,7 +148,9 @@ func runFlowLoadTest(api APITestConfig, duration time.Duration, flowsPerSecond i
 	requests := make(chan struct{})
 	client := &http.Client{Timeout: 20 * time.Second}
 
-	for i := 0; i < 50; i++ {
+	// Number of concurrent workers
+	const numWorkers = 50
+	for i := 0; i < numWorkers; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
@@ -141,26 +183,32 @@ func executeFullFlow(client *http.Client, api APITestConfig) {
 
 	err := doPost(client, api.SignupEndpoint.URL, api.SignupEndpoint.APIKey, "", signupBody)
 	if err != nil {
+		// Log error but continue, as we are in a load test
+		// fmt.Printf("Error during signup for %s: %v\n", api.Name, err)
 		return
 	}
 
 	signinBody := fmt.Sprintf(api.SigninEndpoint.Body, email)
 	respBody, err := doPostAndReadBody(client, api.SigninEndpoint.URL, api.SigninEndpoint.APIKey, "", signinBody)
 	if err != nil {
+		// fmt.Printf("Error during signin for %s: %v\n", api.Name, err)
 		return
 	}
 
 	var signinResp SigninResponse
 	if err := json.Unmarshal(respBody, &signinResp); err != nil {
+		// fmt.Printf("Error unmarshalling signin response for %s: %v\n", api.Name, err)
 		return
 	}
 	token := signinResp.Token
 	if token == "" {
+		// fmt.Printf("Token not found in signin response for %s\n", api.Name)
 		return
 	}
 
 	err = doPost(client, api.AuthEndpoint.URL, api.AuthEndpoint.APIKey, "Bearer "+token, "")
 	if err != nil {
+		// fmt.Printf("Error during authentication for %s: %v\n", api.Name, err)
 		return
 	}
 }
@@ -184,7 +232,8 @@ func doPost(client *http.Client, url, apiKey, authToken, body string) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 400 {
-		return fmt.Errorf("status code: %d", resp.StatusCode)
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("status code: %d, body: %s", resp.StatusCode, string(bodyBytes))
 	}
 	io.Copy(io.Discard, resp.Body)
 	return nil
@@ -209,7 +258,8 @@ func doPostAndReadBody(client *http.Client, url, apiKey, authToken, body string)
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 400 {
-		return nil, fmt.Errorf("status code: %d", resp.StatusCode)
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("status code: %d, body: %s", resp.StatusCode, string(bodyBytes))
 	}
 
 	respBody, err := io.ReadAll(resp.Body)
