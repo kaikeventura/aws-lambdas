@@ -116,128 +116,129 @@ Uma ferramenta personalizada escrita em **Go** para executar testes de carga e c
 
 ## 7. Resultados do Benchmark (CloudWatch)
 
-**Nota:** Os resultados a seguir comparam apenas as implementações em **Java** e **Python**. Testes para Go e Rust serão adicionados futuramente.
+Abaixo estão os resultados detalhados coletados via CloudWatch Dashboard para uma execução de teste comparando as quatro implementações.
+
+![img1.png](prints/img1.png)
+![img2.png](prints/img2.png)
+![img3.png](prints/img3.png)
 
 ### Lambda Metrics
 
 #### 1. Statistics (Invocations, Duration, Cold Start, Memory)
 Comparativo geral de invocações, duração média/máxima, cold starts e uso de memória.
 
-| Metric | Python | Java |
-| :--- | :--- | :--- |
-| **Total Invocations** | 1479 | 3171 |
-| **Avg Duration (ms)** | 1350.55 | 471.67 |
-| **Max Duration (ms)** | 2413.19 | 1696.10 |
-| **Avg Cold Start (ms)** | 1017.76 | 524.38 |
-| **Max Cold Start (ms)** | 1151.60 | 679.99 |
-| **Cold Start Count** | 50 | 75 |
-| **Max Mem Used (MB)** | 87.74 | 129.70 |
-| **Allocated Mem (MB)** | 244.14 | 244.14 |
-
-![Lambda Statistics.png](prints/Lambda%20Statistics.png)
+| Metric | Go | Java | Python | Rust |
+| :--- | :--- | :--- | :--- | :--- |
+| **Total Invocations** | 3724 | 3222 | 1482 | 1446 |
+| **Avg Duration (ms)** | 337.01 | 466.09 | 1343.40 | 1399.60 |
+| **Max Duration (ms)** | 942.50 | 1652.20 | 2378.25 | 3411.59 |
+| **Avg Cold Start (ms)** | 107.12 | 501.53 | 993.86 | 49.23 |
+| **Max Cold Start (ms)** | 127.72 | 574.69 | 1102.78 | 88.76 |
+| **Cold Start Count** | 76 | 50 | 50 | 80 |
+| **Max Mem Used (MB)** | 35.29 | 128.75 | 87.74 | 27.66 |
+| **Allocated Mem (MB)** | 244.14 | 244.14 | 244.14 | 244.14 |
 
 #### 2. Invocations & Errors
-Série temporal de invocações e erros para ambas as funções.
+Volume de invocações e erros registrados.
 
-| Timestamp | Java Invocations | Java Errors | Python Invocations | Python Errors |
-| :--- | :--- | :--- | :--- | :--- |
-| 2026/02/07 13:04:00 | 3171 | 0 | 1479 | 0 |
-
-![Lambda Invocations Errors.png](prints/Lambda%20Invocations%20Errors.png)
+| Function | Invocations | Errors |
+| :--- | :--- | :--- |
+| **Go** | 3724 | 0 |
+| **Java** | 3222 | 0 |
+| **Python** | 1482 | 0 |
+| **Rust** | 1446 | 0 |
 
 #### 3. Duration & P99
 Comparativo de duração média e percentil 99 (P99).
 
-| Timestamp | Java Avg Duration (ms) | Java P99 (ms) | Python Avg Duration (ms) | Python P99 (ms) |
-| :--- | :--- | :--- | :--- | :--- |
-| 2026/02/07 13:04:00 | 484.08 | 1996.28 | 1350.55 | 2255.40 |
-
-![Lambda Duration P99.png](prints/Lambda%20Duration%20P99.png)
+| Function | Duration AVG (ms) | P99 (ms) |
+| :--- | :--- | :--- |
+| **Go** | 339.20 | 919.78 |
+| **Java** | 473.87 | 1916.57 |
+| **Python** | 1343.40 | 2262.23 |
+| **Rust** | 1402.33 | 3265.84 |
 
 #### 4. Throttles & Concurrent Executions
 Monitoramento de throttling e execuções concorrentes.
 
-| Timestamp | Java Throttles | Java Concurrent | Python Throttles | Python Concurrent |
-| :--- | :--- | :--- | :--- | :--- |
-| 2026/02/07 13:04:00 | 0 | 110386 | 0 | 55354 |
-
-![Lambda Throttles Concurrent.png](prints/Lambda%20Throttles%20Concurrent.png)
+| Function | Throttles | Concurrent Executions |
+| :--- | :--- | :--- |
+| **Go** | 0 | 110932 |
+| **Java** | 0 | 110755 |
+| **Python** | 0 | 55636 |
+| **Rust** | 0 | 54232 |
 
 #### 5. Estimated Cost (USD)
 Custo estimado baseado na duração cobrada e memória alocada.
 
 | Function | Cost (USD) |
 | :--- | :--- |
-| Python | $0.008142 |
-| Java | $0.006106 |
-
-![Lambda Cost.png](prints/Lambda%20Cost.png)
+| **Go** | $0.005028 |
+| **Java** | $0.006074 |
+| **Rust** | $0.008060 |
+| **Python** | $0.008111 |
 
 ### API Gateway Metrics
 
-#### 1. Java: Count, 5XX & 4XX Errors
-Volume de requisições e erros no API Gateway para a stack Java.
+#### 1. Count, 5XX & 4XX Errors
+Volume de requisições e erros no API Gateway.
 
-| Timestamp | Count | 5XX Error | 4XX Error |
+| API | Count | 5XX Error | 4XX Error |
 | :--- | :--- | :--- | :--- |
-| 2026/02/07 13:02:00 | 3171 | 0 | 0 |
+| **Go** | 3725 | 1 | 1 |
+| **Java** | 3222 | 0 | 0 |
+| **Python** | 1482 | 0 | 0 |
+| **Rust** | 1447 | 0 | 0 |
 
-![API Gateway Java Errors.png](prints/API%20Gateway%20Java%20Errors.png)
+#### 2. Integration Latency & Latency
+Latência total e de integração para cada stack.
 
-#### 2. Python: Count, 5XX & 4XX Errors
-Volume de requisições e erros no API Gateway para a stack Python.
-
-| Timestamp | Count | 5XX Error | 4XX Error |
-| :--- | :--- | :--- | :--- |
-| 2026/02/07 13:03:00 | 1479 | 0 | 0 |
-
-![API Gateway Python Errors.png](prints/API%20Gateway%20Python%20Errors.png)
-
-#### 3. Java: Latency & Integration Latency
-Latência total e de integração para a stack Java.
-
-| Metric | Min (ms) | Max (ms) | Avg (ms) | P99 (ms) |
-| :--- | :--- | :--- | :--- | :--- |
-| **Integration Latency** | 10 | 2653 | 503.35 | 2280.50 |
-| **Total Latency** | 15 | 2694 | 507.85 | 2295.95 |
-
-![API Gateway Java Latency.png](prints/API%20Gateway%20Java%20Latency.png)
-
-#### 2. Python: Latency & Integration Latency
-Latência total e de integração para a stack Python.
-
-| Metric | Min (ms) | Max (ms) | Avg (ms) | P99 (ms) |
-| :--- | :--- | :--- | :--- | :--- |
-| **Integration Latency** | 10 | 3808 | 1399.07 | 3538.98 |
-| **Total Latency** | 14 | 3813 | 1403.72 | 3538.98 |
-
-![API Gateway Python Latency.png](prints/API%20Gateway%20Python%20Latency.png)
+| API | Metric | Min (ms) | Max (ms) | Avg (ms) | P99 (ms) |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Go** | Integration Latency | 9 | 1356 | 351.45 | 1071.38 |
+| | Total Latency | 13 | 1363 | 355.93 | 1071.92 |
+| **Java** | Integration Latency | 10 | 2461 | 491.78 | 2146.50 |
+| | Total Latency | 15 | 2465 | 496.25 | 2150.87 |
+| **Python** | Integration Latency | 10 | 3648 | 1390.98 | 3514.14 |
+| | Total Latency | 14 | 3654 | 1395.68 | 3514.14 |
+| **Rust** | Integration Latency | 11 | 3587 | 1418.66 | 3519.75 |
+| | Total Latency | 15 | 3591 | 1423.54 | 3522.79 |
 
 ---
 
-## 8. Conclusão e Comparativo Final (Java vs Python)
+## 8. Conclusão e Comparativo Final
 
-Com base nos dados coletados, podemos fazer uma análise detalhada entre as duas implementações:
+Com base nos dados coletados, podemos fazer uma análise detalhada entre as quatro implementações:
 
 ### Desempenho (Latência e Throughput)
-*   **Java (Quarkus)** demonstrou um desempenho significativamente superior.
-    *   **Duração Média:** ~471ms vs ~1350ms do Python. O Java foi quase **3x mais rápido** em média.
-    *   **Cold Start:** O Java (com Quarkus) teve um cold start médio de ~524ms, enquanto o Python teve ~1017ms. Isso é surpreendente, pois geralmente Python tem cold starts menores, mas mostra a eficiência do Quarkus.
-    *   **Throughput:** O Java processou mais que o dobro de invocações (3171 vs 1479) no mesmo período de teste, indicando maior capacidade de vazão.
+*   **Go** foi o grande vencedor em termos de desempenho bruto.
+    *   **Duração Média:** ~337ms, sendo o mais rápido de todos.
+    *   **Throughput:** Processou o maior número de invocações (3724), demonstrando excelente capacidade de vazão.
+    *   **Latência P99:** Manteve a latência de cauda (P99) em ~920ms, significativamente menor que os outros.
+*   **Java (Quarkus)** ficou em segundo lugar, com desempenho muito sólido.
+    *   **Duração Média:** ~466ms.
+    *   **Throughput:** 3222 invocações, próximo ao Go.
+*   **Rust** e **Python** tiveram desempenhos similares em duração média (~1400ms), o que é inesperado para Rust. Isso pode indicar alguma ineficiência na implementação específica ou overhead em bibliotecas utilizadas (como bcrypt/argon2) que podem não estar otimizadas para o ambiente Lambda como em Go/Java.
+
+### Cold Start
+*   **Rust** teve o menor cold start médio (~49ms) e máximo (~88ms), mostrando a eficiência do binário nativo pequeno.
+*   **Go** também teve cold starts excelentes (~107ms).
+*   **Java (Quarkus)** teve cold starts moderados (~500ms), o que é ótimo para Java.
+*   **Python** teve os maiores cold starts (~993ms).
 
 ### Consumo de Recursos
-*   **Memória:** O Java consumiu mais memória (Max ~130MB) comparado ao Python (~88MB). Isso é esperado dada a JVM, mas o valor é baixo para Java, validando o uso do Quarkus.
+*   **Rust** foi o mais eficiente em memória (~27MB).
+*   **Go** também foi muito eficiente (~35MB).
+*   **Python** consumiu ~87MB.
+*   **Java** consumiu mais memória (~128MB), como esperado da JVM, mas ainda dentro de limites muito razoáveis.
 
 ### Custo
-*   **Custo Total:** O custo estimado para o Java foi **menor** ($0.0061 vs $0.0081), mesmo processando **mais que o dobro** de requisições.
-*   **Eficiência de Custo:** Como o custo da Lambda é baseado em (Duração * Memória), a rapidez do Java compensou o uso ligeiramente maior de memória.
+*   **Go** foi a opção mais barata ($0.0050), seguido de perto pelo **Java** ($0.0060).
+*   **Rust** e **Python** foram os mais caros (~$0.0080) devido ao maior tempo de execução médio neste teste específico.
 
-### Veredito: Qual a melhor escolha?
+### Veredito
 
-**Vencedor (Java vs Python): Java (Quarkus)**
-
-Para este cenário de API REST com DynamoDB, a implementação em **Java com Quarkus** é a escolha superior.
-
-*   ✅ **Mais Rápido:** Respostas 3x mais rápidas para o usuário final.
-*   ✅ **Mais Barato:** Menor custo por transação devido à menor duração de execução.
-*   ✅ **Escalabilidade:** Demonstrou capacidade de lidar com maior volume de carga (throughput).
+*   **Go:** A melhor escolha geral para este cenário. Combinou o maior throughput, menor latência média e menor custo.
+*   **Java (Quarkus):** Uma excelente alternativa, especialmente para times já familiarizados com o ecossistema Java. O Quarkus cumpre a promessa de tornar Java viável e eficiente para Serverless.
+*   **Rust:** Campeão em eficiência de memória e cold start. O tempo de execução médio alto merece investigação (possivelmente otimização de código ou bibliotecas), pois a linguagem tem potencial para competir com ou superar Go.
+*   **Python:** A opção mais lenta e com maior cold start neste benchmark, embora seja a mais fácil de implementar.
