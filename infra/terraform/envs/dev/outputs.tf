@@ -33,6 +33,11 @@ output "lambda_nodejs_arn" {
   value       = module.lambda_nodejs.lambda_arn
 }
 
+output "lambda_dotnet_arn" {
+  description = "ARN of the .NET Lambda function."
+  value       = module.lambda_dotnet.lambda_arn
+}
+
 # --- Python API Outputs ---
 output "python_api_url" {
   description = "URL for Python API"
@@ -90,5 +95,17 @@ output "nodejs_api_url" {
 output "nodejs_api_key" {
   description = "API Key for Node.js API"
   value       = module.api_gateway_nodejs.api_key
+  sensitive   = true
+}
+
+# --- .NET API Outputs ---
+output "dotnet_api_url" {
+  description = "URL for .NET API"
+  value       = module.api_gateway_dotnet.base_url
+}
+
+output "dotnet_api_key" {
+  description = "API Key for .NET API"
+  value       = module.api_gateway_dotnet.api_key
   sensitive   = true
 }

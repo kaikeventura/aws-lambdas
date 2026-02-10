@@ -59,6 +59,15 @@ module "lambda_nodejs" {
   enable_build = var.enable_builds
 }
 
+module "lambda_dotnet" {
+  source = "../../modules/lambda-dotnet"
+
+  table_name   = module.dynamodb_users.table_name
+  table_arn    = module.dynamodb_users.table_arn
+  jwt_secret   = var.jwt_secret_value
+  enable_build = var.enable_builds
+}
+
 module "api_gateway_python" {
   source = "../../modules/api-gateway"
 
@@ -112,6 +121,17 @@ module "api_gateway_nodejs" {
 
   lambda_invoke_arn    = module.lambda_nodejs.invoke_arn
   lambda_function_name = module.lambda_nodejs.function_name
+}
+
+module "api_gateway_dotnet" {
+  source = "../../modules/api-gateway"
+
+  project = var.project
+  env     = var.env
+  api_name = "dotnet"
+
+  lambda_invoke_arn    = module.lambda_dotnet.invoke_arn
+  lambda_function_name = module.lambda_dotnet.function_name
 }
 
 data "aws_caller_identity" "current" {}
