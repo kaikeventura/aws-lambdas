@@ -28,6 +28,11 @@ output "lambda_rust_arn" {
   value       = module.lambda_rust.lambda_arn
 }
 
+output "lambda_nodejs_arn" {
+  description = "ARN of the Node.js Lambda function."
+  value       = module.lambda_nodejs.lambda_arn
+}
+
 # --- Python API Outputs ---
 output "python_api_url" {
   description = "URL for Python API"
@@ -73,5 +78,17 @@ output "rust_api_url" {
 output "rust_api_key" {
   description = "API Key for Rust API"
   value       = module.api_gateway_rust.api_key
+  sensitive   = true
+}
+
+# --- Node.js API Outputs ---
+output "nodejs_api_url" {
+  description = "URL for Node.js API"
+  value       = module.api_gateway_nodejs.base_url
+}
+
+output "nodejs_api_key" {
+  description = "API Key for Node.js API"
+  value       = module.api_gateway_nodejs.api_key
   sensitive   = true
 }
