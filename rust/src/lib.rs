@@ -7,6 +7,14 @@ use lambda_runtime::{Error, LambdaEvent};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::env;
+use tokio::sync::OnceCell;
+
+// Global client instance to be reused across invocations
+static DYNAMODB_CLIENT: OnceCell<Client> = OnceCell::const_new();
+static TABLE_NAME: OnceCell<String> = OnceCell::const_new();
+
+// Set bcrypt cost to 10 to match Go's default cost (Rust default is 12)
+const BCRYPT_COST: u32 = 10;
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct User {
@@ -38,11 +46,21 @@ pub struct Claims {
     pub exp: usize,
 }
 
-pub async fn get_dynamodb_client() -> (Client, String) {
-    let config = aws_config::load_defaults(BehaviorVersion::latest()).await;
-    let client = Client::new(&config);
-    let table_name = env::var("TABLE_NAME").expect("TABLE_NAME must be set");
-    (client, table_name)
+pub async fn get_dynamodb_client() -> &'static Client {
+    DYNAMODB_CLIENT
+        .get_or_init(|| async {
+            let config = aws_config::load_defaults(BehaviorVersion::latest()).await;
+            Client::new(&config)
+        })
+        .await
+}
+
+pub async fn get_table_name() -> &'static String {
+    TABLE_NAME
+        .get_or_init(|| async {
+            env::var("TABLE_NAME").expect("TABLE_NAME must be set")
+        })
+        .await
 }
 
 pub fn json_response(status_code: i32, body: Value) -> Result<Value, Error> {
@@ -78,7 +96,7 @@ pub async fn signup(body: &str, client: &Client, table_name: &str) -> Result<Val
         }
     }
 
-    let hashed_password = match hash(&req.password, DEFAULT_COST) {
+    let hashed_password = match hash(&req.password, BCRYPT_COST) {
         Ok(h) => h,
         Err(_) => return json_response(500, json!({ "error": "Internal server error." })),
     };
@@ -196,7 +214,8 @@ pub fn authenticate(headers: &Value, jwt_secret: &str) -> Result<Value, Error> {
 }
 
 pub async fn function_handler(event: LambdaEvent<Value>) -> Result<Value, Error> {
-    let (client, table_name) = get_dynamodb_client().await;
+    let client = get_dynamodb_client().await;
+    let table_name = get_table_name().await;
     let jwt_secret = env::var("JWT_SECRET").expect("JWT_SECRET must be set");
 
     let http_method = event.payload.get("httpMethod").and_then(|v| v.as_str()).unwrap_or("");
@@ -207,8 +226,8 @@ pub async fn function_handler(event: LambdaEvent<Value>) -> Result<Value, Error>
     let headers = event.payload.get("headers").unwrap_or(&default_headers);
 
     match (http_method, path) {
-        ("POST", "/signup") => signup(body, &client, &table_name).await,
-        ("POST", "/signin") => signin(body, &client, &table_name, &jwt_secret).await,
+        ("POST", "/signup") => signup(body, client, table_name).await,
+        ("POST", "/signin") => signin(body, client, table_name, &jwt_secret).await,
         ("POST", "/authentication") => authenticate(headers, &jwt_secret),
         _ => json_response(404, json!({ "error": "Not Found" })),
     }
