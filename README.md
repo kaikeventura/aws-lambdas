@@ -1,6 +1,6 @@
 # AWS Lambdas Benchmark Project
 
-Este repositório contém um projeto completo para comparar o desempenho de AWS Lambdas implementadas em **Java (Quarkus)**, **Python**, **Go** e **Rust**. O projeto inclui a infraestrutura como código (Terraform), o código fonte das funções e uma ferramenta de benchmark.
+Este repositório contém um projeto completo para comparar o desempenho de AWS Lambdas implementadas em **Java (Quarkus)**, **Python**, **Go**, **Rust**, **.NET** e **Node.js**. O projeto inclui a infraestrutura como código (Terraform), o código fonte das funções e uma ferramenta de benchmark.
 
 ## Estrutura do Projeto
 
@@ -9,9 +9,11 @@ A estrutura de diretórios é organizada da seguinte forma:
 ```
 /
 ├── benchmark/      # Ferramenta de teste de carga escrita em Go
+├── dotnet/         # Implementação da Lambda em .NET
 ├── go/             # Implementação da Lambda em Go
 ├── infra/          # Infraestrutura como código (Terraform)
 ├── java/           # Implementação da Lambda em Java (Quarkus)
+├── nodejs/         # Implementação da Lambda em Node.js
 ├── python/         # Implementação da Lambda em Python
 ├── rust/           # Implementação da Lambda em Rust
 └── README.md       # Documentação do projeto
@@ -74,7 +76,35 @@ A implementação em Rust também é compilada para um binário nativo estático
 
 ---
 
-## 5. Infraestrutura (Terraform)
+## 5. .NET
+
+A implementação em .NET utiliza o runtime gerenciado .NET 8.
+
+*   **Localização:** `/dotnet`
+*   **Runtime:** `dotnet8`
+*   **Build:** O projeto é publicado como um binário autocontido ou dependente do framework (neste caso, dependente, usando o runtime da AWS).
+*   **Principais Dependências:**
+    *   `Amazon.Lambda.Core`: Runtime da AWS Lambda.
+    *   `AWSSDK.DynamoDBv2`: SDK da AWS.
+    *   `System.IdentityModel.Tokens.Jwt`: Manipulação de JWT.
+    *   `BCrypt.Net-Next`: Hashing de senhas.
+
+---
+
+## 6. Node.js
+
+A implementação em Node.js utiliza o runtime padrão e o AWS SDK v3.
+
+*   **Localização:** `/nodejs`
+*   **Runtime:** `nodejs20.x`
+*   **Principais Dependências (`package.json`):**
+    *   `@aws-sdk/client-dynamodb`: Cliente DynamoDB (SDK v3).
+    *   `jsonwebtoken`: Manipulação de tokens JWT.
+    *   `bcryptjs`: Hashing de senhas.
+
+---
+
+## 7. Infraestrutura (Terraform)
 
 A infraestrutura é provisionada utilizando **Terraform**, garantindo reprodutibilidade e gerenciamento de estado.
 
@@ -88,6 +118,8 @@ A infraestrutura é provisionada utilizando **Terraform**, garantindo reprodutib
 *   `modules/lambda-python`: Provisionamento da Lambda Python.
 *   `modules/lambda-go`: Provisionamento da Lambda Go.
 *   `modules/lambda-rust`: Provisionamento da Lambda Rust.
+*   `modules/lambda-dotnet`: Provisionamento da Lambda .NET.
+*   `modules/lambda-nodejs`: Provisionamento da Lambda Node.js.
 *   `modules/api-gateway`: Configuração do API Gateway para expor as Lambdas.
 
 ### Ambientes
@@ -95,7 +127,7 @@ A infraestrutura é provisionada utilizando **Terraform**, garantindo reprodutib
 
 ---
 
-## 6. Benchmark (Go)
+## 8. Benchmark (Go)
 
 Uma ferramenta personalizada escrita em **Go** para executar testes de carga e comparar o desempenho das implementações.
 
@@ -114,13 +146,9 @@ Uma ferramenta personalizada escrita em **Go** para executar testes de carga e c
 
 ---
 
-## 7. Resultados do Benchmark (CloudWatch)
+## 9. Resultados do Benchmark (CloudWatch)
 
-Abaixo estão os resultados detalhados coletados via CloudWatch Dashboard para uma execução de teste comparando as quatro implementações.
-
-![img1.png](prints/img1.png)
-![img2.png](prints/img2.png)
-![img3.png](prints/img3.png)
+Abaixo estão os resultados detalhados coletados via CloudWatch Dashboard para uma execução de teste comparando as implementações (Java, Python, Go, Rust).
 
 ### Lambda Metrics
 
@@ -206,7 +234,7 @@ Latência total e de integração para cada stack.
 
 ---
 
-## 8. Conclusão e Comparativo Final
+## 10. Conclusão e Comparativo Final
 
 Com base nos dados coletados, podemos fazer uma análise detalhada entre as quatro implementações:
 
