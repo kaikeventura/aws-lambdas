@@ -40,6 +40,12 @@ var (
 
 	rustBaseURL = "RUST_API_GATEWAY_URL"
 	rustAPIKey  = "RUST_API_KEY"
+
+	dotnetBaseURL = "DOTNET_API_GATEWAY_URL"
+	dotnetAPIKey  = "DOTNET_API_KEY"
+
+	nodejsBaseURL = "NODEJS_API_GATEWAY_URL"
+	nodejsAPIKey  = "NODEJS_API_KEY"
 )
 
 func main() {
@@ -112,6 +118,40 @@ func main() {
 			AuthEndpoint: EndpointConfig{
 				URL:    rustBaseURL + "/authentication",
 				APIKey: rustAPIKey,
+			},
+		},
+		{
+			Name: "DotNet",
+			SignupEndpoint: EndpointConfig{
+				URL:    dotnetBaseURL + "/signup",
+				APIKey: dotnetAPIKey,
+				Body:   `{"email": "%s", "password": "password123", "name": "DotNet User"}`,
+			},
+			SigninEndpoint: EndpointConfig{
+				URL:    dotnetBaseURL + "/signin",
+				APIKey: dotnetAPIKey,
+				Body:   `{"email": "%s", "password": "password123"}`,
+			},
+			AuthEndpoint: EndpointConfig{
+				URL:    dotnetBaseURL + "/authentication",
+				APIKey: dotnetAPIKey,
+			},
+		},
+		{
+			Name: "NodeJS",
+			SignupEndpoint: EndpointConfig{
+				URL:    nodejsBaseURL + "/signup",
+				APIKey: nodejsAPIKey,
+				Body:   `{"email": "%s", "password": "password123", "name": "NodeJS User"}`,
+			},
+			SigninEndpoint: EndpointConfig{
+				URL:    nodejsBaseURL + "/signin",
+				APIKey: nodejsAPIKey,
+				Body:   `{"email": "%s", "password": "password123"}`,
+			},
+			AuthEndpoint: EndpointConfig{
+				URL:    nodejsBaseURL + "/authentication",
+				APIKey: nodejsAPIKey,
 			},
 		},
 	}
