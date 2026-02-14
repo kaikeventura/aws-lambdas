@@ -148,63 +148,79 @@ Uma ferramenta personalizada escrita em **Go** para executar testes de carga e c
 
 ## 9. Resultados do Benchmark (CloudWatch)
 
-Abaixo estão os resultados detalhados coletados via CloudWatch Dashboard para uma execução de teste comparando as implementações (Java, Python, Go, Rust).
+Abaixo estão os resultados detalhados coletados via CloudWatch Dashboard para uma execução de teste comparando as seis implementações.
+
+![img.png](prints/img.png)
+![img_1.png](prints/img_1.png)
+![img_2.png](prints/img_2.png)
+![img_3.png](prints/img_3.png)
+![img_4.png](prints/img_4.png)
+![img_5.png](prints/img_5.png)
+![img_6.png](prints/img_6.png)
 
 ### Lambda Metrics
 
 #### 1. Statistics (Invocations, Duration, Cold Start, Memory)
 Comparativo geral de invocações, duração média/máxima, cold starts e uso de memória.
 
-| Metric | Go | Java | Python | Rust |
-| :--- | :--- | :--- | :--- | :--- |
-| **Total Invocations** | 3724 | 3222 | 1482 | 1446 |
-| **Avg Duration (ms)** | 337.01 | 466.09 | 1343.40 | 1399.60 |
-| **Max Duration (ms)** | 942.50 | 1652.20 | 2378.25 | 3411.59 |
-| **Avg Cold Start (ms)** | 107.12 | 501.53 | 993.86 | 49.23 |
-| **Max Cold Start (ms)** | 127.72 | 574.69 | 1102.78 | 88.76 |
-| **Cold Start Count** | 76 | 50 | 50 | 80 |
-| **Max Mem Used (MB)** | 35.29 | 128.75 | 87.74 | 27.66 |
-| **Allocated Mem (MB)** | 244.14 | 244.14 | 244.14 | 244.14 |
+| Metric | Go | Rust | Node.js | Java | Python | .NET |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Total Invocations** | 3912 | 3669 | 3234 | 3255 | 1554 | 1584 |
+| **Avg Duration (ms)** | 328.15 | 357.12 | 461.18 | 461.92 | 1320.83 | 1334.32 |
+| **Max Duration (ms)** | 934.33 | 1762.69 | 1558.38 | 1599.61 | 2334.51 | 6811.12 |
+| **Avg Cold Start (ms)** | 106.16 | 48.43 | 519.71 | 497.69 | 967.53 | 343.63 |
+| **Max Cold Start (ms)** | 122.01 | 57.37 | 576.57 | 553.72 | 1058.85 | 408.29 |
+| **Cold Start Count** | 72 | 73 | 50 | 50 | 51 | 54 |
+| **Max Mem Used (MB)** | 35.29 | 27.66 | 99.18 | 129.70 | 87.74 | 121.12 |
+| **Allocated Mem (MB)** | 244.14 | 244.14 | 244.14 | 244.14 | 244.14 | 244.14 |
 
 #### 2. Invocations & Errors
 Volume de invocações e erros registrados.
 
 | Function | Invocations | Errors |
 | :--- | :--- | :--- |
-| **Go** | 3724 | 0 |
-| **Java** | 3222 | 0 |
-| **Python** | 1482 | 0 |
-| **Rust** | 1446 | 0 |
+| **Go** | 3912 | 0 |
+| **Rust** | 3669 | 0 |
+| **Java** | 3255 | 0 |
+| **Node.js** | 3234 | 0 |
+| **.NET** | 1584 | 0 |
+| **Python** | 1554 | 0 |
 
 #### 3. Duration & P99
 Comparativo de duração média e percentil 99 (P99).
 
 | Function | Duration AVG (ms) | P99 (ms) |
 | :--- | :--- | :--- |
-| **Go** | 339.20 | 919.78 |
-| **Java** | 473.87 | 1916.57 |
-| **Python** | 1343.40 | 2262.23 |
-| **Rust** | 1402.33 | 3265.84 |
+| **Go** | 330.11 | 907.45 |
+| **Rust** | 358.08 | 1704.21 |
+| **Node.js** | 461.18 | 1373.32 |
+| **Java** | 469.56 | 1912.41 |
+| **Python** | 1320.83 | 2250.75 |
+| **.NET** | 1334.32 | 6211.13 |
 
 #### 4. Throttles & Concurrent Executions
 Monitoramento de throttling e execuções concorrentes.
 
 | Function | Throttles | Concurrent Executions |
 | :--- | :--- | :--- |
-| **Go** | 0 | 110932 |
-| **Java** | 0 | 110755 |
-| **Python** | 0 | 55636 |
-| **Rust** | 0 | 54232 |
+| **Go** | 0 | 120611 |
+| **Rust** | 0 | 113091 |
+| **Java** | 0 | 113092 |
+| **Node.js** | 0 | 111379 |
+| **.NET** | 0 | 62490 |
+| **Python** | 0 | 59832 |
 
 #### 5. Estimated Cost (USD)
 Custo estimado baseado na duração cobrada e memória alocada.
 
 | Function | Cost (USD) |
 | :--- | :--- |
-| **Go** | $0.005028 |
-| **Java** | $0.006074 |
-| **Rust** | $0.008060 |
-| **Python** | $0.008111 |
+| **Go** | $0.005140 |
+| **Rust** | $0.005229 |
+| **Node.js** | $0.006036 |
+| **Java** | $0.006080 |
+| **Python** | $0.008355 |
+| **.NET** | $0.008475 |
 
 ### API Gateway Metrics
 
@@ -213,60 +229,76 @@ Volume de requisições e erros no API Gateway.
 
 | API | Count | 5XX Error | 4XX Error |
 | :--- | :--- | :--- | :--- |
-| **Go** | 3725 | 1 | 1 |
-| **Java** | 3222 | 0 | 0 |
-| **Python** | 1482 | 0 | 0 |
-| **Rust** | 1447 | 0 | 0 |
+| **Go** | 3912 | 0 | 0 |
+| **Rust** | 3669 | 0 | 0 |
+| **Java** | 3255 | 0 | 0 |
+| **Node.js** | 3234 | 0 | 0 |
+| **.NET** | 1584 | 0 | 0 |
+| **Python** | 1554 | 0 | 0 |
 
 #### 2. Integration Latency & Latency
 Latência total e de integração para cada stack.
 
 | API | Metric | Min (ms) | Max (ms) | Avg (ms) | P99 (ms) |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Go** | Integration Latency | 9 | 1356 | 351.45 | 1071.38 |
-| | Total Latency | 13 | 1363 | 355.93 | 1071.92 |
-| **Java** | Integration Latency | 10 | 2461 | 491.78 | 2146.50 |
-| | Total Latency | 15 | 2465 | 496.25 | 2150.87 |
-| **Python** | Integration Latency | 10 | 3648 | 1390.98 | 3514.14 |
-| | Total Latency | 14 | 3654 | 1395.68 | 3514.14 |
-| **Rust** | Integration Latency | 11 | 3587 | 1418.66 | 3519.75 |
-| | Total Latency | 15 | 3591 | 1423.54 | 3522.79 |
+| **Go** | Integration Latency | 9 | 1353 | 342.39 | 1020.11 |
+| | Total Latency | 13 | 1361 | 347.34 | 1025.06 |
+| **Rust** | Integration Latency | 9 | 2096 | 369.27 | 1820.96 |
+| | Total Latency | 12 | 2100 | 374.08 | 1828.56 |
+| **Node.js** | Integration Latency | 11 | 2294 | 478.01 | 2083.85 |
+| | Total Latency | 14 | 2300 | 482.53 | 2083.85 |
+| **Java** | Integration Latency | 11 | 2534 | 487.41 | 2157.66 |
+| | Total Latency | 15 | 2560 | 492.30 | 2169.50 |
+| **.NET** | Integration Latency | 11 | 7295 | 1353.24 | 6630.51 |
+| | Total Latency | 15 | 7300 | 1357.70 | 6630.51 |
+| **Python** | Integration Latency | 10 | 3637 | 1365.85 | 3491.83 |
+| | Total Latency | 14 | 3644 | 1370.57 | 3495.46 |
 
 ---
 
 ## 10. Conclusão e Comparativo Final
 
-Com base nos dados coletados, podemos fazer uma análise detalhada entre as quatro implementações:
+Com base nos dados coletados, podemos fazer uma análise detalhada entre as seis implementações:
 
 ### Desempenho (Latência e Throughput)
 *   **Go** foi o grande vencedor em termos de desempenho bruto.
-    *   **Duração Média:** ~337ms, sendo o mais rápido de todos.
-    *   **Throughput:** Processou o maior número de invocações (3724), demonstrando excelente capacidade de vazão.
-    *   **Latência P99:** Manteve a latência de cauda (P99) em ~920ms, significativamente menor que os outros.
-*   **Java (Quarkus)** ficou em segundo lugar, com desempenho muito sólido.
-    *   **Duração Média:** ~466ms.
-    *   **Throughput:** 3222 invocações, próximo ao Go.
-*   **Rust** e **Python** tiveram desempenhos similares em duração média (~1400ms), o que é inesperado para Rust. Isso pode indicar alguma ineficiência na implementação específica ou overhead em bibliotecas utilizadas (como bcrypt/argon2) que podem não estar otimizadas para o ambiente Lambda como em Go/Java.
+    *   **Duração Média:** ~328ms, sendo o mais rápido de todos.
+    *   **Throughput:** Processou o maior número de invocações (3912), demonstrando excelente capacidade de vazão.
+    *   **Latência P99:** Manteve a latência de cauda (P99) em ~907ms, significativamente menor que os outros.
+*   **Rust** ficou em segundo lugar, muito próximo ao Go.
+    *   **Duração Média:** ~357ms.
+    *   **Throughput:** 3669 invocações.
+    *   *Nota:* Após otimizações (reuso de conexão e ajuste de custo bcrypt), Rust mostrou seu verdadeiro potencial, superando Java e Node.js.
+*   **Node.js** e **Java (Quarkus)** tiveram desempenhos muito similares e sólidos.
+    *   **Duração Média:** ~461ms para ambos.
+    *   **Throughput:** ~3230-3250 invocações.
+    *   Isso mostra que o runtime V8 do Node.js é muito eficiente para I/O bound, competindo de igual para igual com Java compilado nativamente (Quarkus).
+*   **Python** e **.NET** ficaram para trás neste cenário específico.
+    *   **Duração Média:** ~1320-1330ms.
+    *   **Throughput:** ~1550-1580 invocações (menos da metade dos líderes).
+    *   **.NET:** Apresentou picos de latência (P99 ~6.2s) muito altos, indicando possíveis problemas de cold start severos ou gargalos na implementação específica (talvez na biblioteca de criptografia ou serialização).
 
 ### Cold Start
-*   **Rust** teve o menor cold start médio (~49ms) e máximo (~88ms), mostrando a eficiência do binário nativo pequeno.
-*   **Go** também teve cold starts excelentes (~107ms).
-*   **Java (Quarkus)** teve cold starts moderados (~500ms), o que é ótimo para Java.
-*   **Python** teve os maiores cold starts (~993ms).
+*   **Rust** teve o menor cold start médio (~48ms) e máximo (~57ms), mostrando a eficiência imbatível do binário nativo pequeno.
+*   **Go** também teve cold starts excelentes (~106ms).
+*   **.NET** surpreendeu com cold starts relativamente baixos (~343ms), melhores que Java e Node.js, apesar do tempo de execução médio alto.
+*   **Java (Quarkus)** e **Node.js** tiveram cold starts moderados (~500ms).
+*   **Python** teve os maiores cold starts (~967ms).
 
 ### Consumo de Recursos
 *   **Rust** foi o mais eficiente em memória (~27MB).
 *   **Go** também foi muito eficiente (~35MB).
-*   **Python** consumiu ~87MB.
-*   **Java** consumiu mais memória (~128MB), como esperado da JVM, mas ainda dentro de limites muito razoáveis.
+*   **Python** (~87MB) e **Node.js** (~99MB) tiveram consumo moderado.
+*   **.NET** (~121MB) e **Java** (~129MB) consumiram mais memória, como esperado de runtimes mais pesados, mas ainda dentro de limites razoáveis.
 
 ### Custo
-*   **Go** foi a opção mais barata ($0.0050), seguido de perto pelo **Java** ($0.0060).
-*   **Rust** e **Python** foram os mais caros (~$0.0080) devido ao maior tempo de execução médio neste teste específico.
+*   **Go** e **Rust** foram as opções mais baratas (~$0.0051-0.0052), devido à combinação de baixo tempo de execução e baixo consumo de memória.
+*   **Node.js** e **Java** vieram em seguida (~$0.0060).
+*   **Python** e **.NET** foram os mais caros (~$0.0083-0.0084) devido ao maior tempo de execução médio.
 
 ### Veredito
 
-*   **Go:** A melhor escolha geral para este cenário. Combinou o maior throughput, menor latência média e menor custo.
-*   **Java (Quarkus):** Uma excelente alternativa, especialmente para times já familiarizados com o ecossistema Java. O Quarkus cumpre a promessa de tornar Java viável e eficiente para Serverless.
-*   **Rust:** Campeão em eficiência de memória e cold start. O tempo de execução médio alto merece investigação (possivelmente otimização de código ou bibliotecas), pois a linguagem tem potencial para competir com ou superar Go.
-*   **Python:** A opção mais lenta e com maior cold start neste benchmark, embora seja a mais fácil de implementar.
+*   **Go e Rust:** São as melhores escolhas para performance máxima e menor custo. Rust leva vantagem no cold start e memória, enquanto Go teve uma leve vantagem no throughput e latência média neste teste.
+*   **Node.js e Java (Quarkus):** Excelentes alternativas "middle-ground". Oferecem ótimo desempenho e são escolhas sólidas para times que já dominam essas linguagens. O Quarkus coloca o Java no mesmo patamar do Node.js em serverless.
+*   **Python:** Embora fácil de desenvolver, mostrou-se menos performático para este workload específico de alta concorrência e criptografia.
+*   **.NET:** Precisa de investigação. O alto tempo de execução médio e os picos de latência sugerem que a implementação pode ser otimizada ou que o runtime tem um overhead significativo para este tipo de tarefa (auth/crypto) em comparação aos outros.
